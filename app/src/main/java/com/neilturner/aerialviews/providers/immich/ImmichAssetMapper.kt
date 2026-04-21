@@ -33,6 +33,7 @@ class ImmichAssetMapper(
     fun processAssets(
         assets: List<Asset>,
         alternatesByPrimaryId: Map<String, List<Asset>> = emptyMap(),
+        poolByAssetId: Map<String, String> = emptyMap(),
     ): ProcessResults {
         val media = mutableListOf<AerialMedia>()
         var excluded = 0
@@ -71,6 +72,7 @@ class ImmichAssetMapper(
                         metadata =
                             AerialMediaMetadata(
                                 albumName = asset.albumName.orEmpty(),
+                                sourcePool = poolByAssetId[asset.id].orEmpty(),
                                 exif = exif,
                             ),
                         clusterAlternates = altUris,

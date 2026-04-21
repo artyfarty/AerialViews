@@ -191,6 +191,26 @@ internal class MetadataResolver(
                 }
             }
 
+            "DATE_TIME_TAKEN" -> {
+                val exifDate = media.metadata.exif.date
+                if (!exifDate.isNullOrBlank()) {
+                    DateHelper
+                        .formatExifDateTime(
+                            date = exifDate,
+                            offset = media.metadata.exif.offset,
+                        )?.takeIf { it.isNotBlank() }
+                        ?.let {
+                            ResolvedMetadata(
+                                text = it,
+                                poi = emptyMap(),
+                                metadataType = MetadataType.STATIC,
+                            )
+                        }
+                } else {
+                    null
+                }
+            }
+
             "DESCRIPTION" -> {
                 media.metadata.exif.description
                     ?.trim()
@@ -206,6 +226,19 @@ internal class MetadataResolver(
 
             "ALBUM_NAME" -> {
                 media.metadata.albumName
+                    .trim()
+                    .takeIf { it.isNotBlank() && media.source == AerialMediaSource.IMMICH }
+                    ?.let {
+                        ResolvedMetadata(
+                            text = it,
+                            poi = emptyMap(),
+                            metadataType = MetadataType.STATIC,
+                        )
+                    }
+            }
+
+            "SOURCE_POOL" -> {
+                media.metadata.sourcePool
                     .trim()
                     .takeIf { it.isNotBlank() && media.source == AerialMediaSource.IMMICH }
                     ?.let {

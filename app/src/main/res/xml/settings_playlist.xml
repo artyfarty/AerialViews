@@ -24,6 +24,17 @@
                     app:summary="@string/playlist_sleep_timer_summary"
                     app:useSimpleSummaryProvider="true"
                     app:dialogTitle="@string/playlist_sleep_timer_title" />
+
+                <!-- Periodic provider refresh -->
+                <ListPreference
+                    app:defaultValue="0"
+                    app:entries="@array/provider_refresh_interval_entries"
+                    app:entryValues="@array/provider_refresh_interval_values"
+                    app:key="provider_refresh_interval_hours"
+                    app:title="@string/playlist_provider_refresh_title"
+                    app:summary="@string/playlist_provider_refresh_summary"
+                    app:useSimpleSummaryProvider="true"
+                    app:dialogTitle="@string/playlist_provider_refresh_title" />
         </PreferenceCategory>
 
         <PreferenceCategory app:title="@string/category_time_of_day">

@@ -358,6 +358,9 @@
     <string name="immich_media_include_random_title">Include random photos</string>
     <string name="immich_media_include_recent_title">Include recent photos</string>
 
+    <string name="playlist_provider_refresh_title">Refresh playlist periodically</string>
+    <string name="playlist_provider_refresh_summary">Re-fetch content from all enabled providers on an interval (useful when the screensaver runs for many hours and new photos have been added)</string>
+
     <string name="immich_smart_slideshow_title">Smart slideshow</string>
     <string name="immich_smart_slideshow_summary">Collapse photos taken close in time into one slot so bursts and event photos don\'t dominate the mix</string>
     <string name="immich_smart_slideshow_gap_title">Clustering window</string>

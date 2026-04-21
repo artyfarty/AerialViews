@@ -115,6 +115,7 @@ class ImmichMediaProvider(
             mapper.processAssets(
                 clusterResult.representatives,
                 clusterResult.alternatesByPrimaryId,
+                assetResults.poolByAssetId,
             )
         media.addAll(processResults.media)
 
@@ -202,6 +203,15 @@ class ImmichMediaProvider(
             val randomAssets = randomDeferred.await()
             val recentAssets = recentDeferred.await()
 
+            // Attribute each unique asset to the first pool it was seen in.
+            // Primary album entries come first so multi-pool assets keep their album name.
+            val poolByAssetId = mutableMapOf<String, String>()
+            for (a in filteredPrimaryAssets) poolByAssetId.putIfAbsent(a.id, a.albumName?.ifBlank { null } ?: "Album")
+            for (a in favoriteAssets) poolByAssetId.putIfAbsent(a.id, "Favorites")
+            for (a in ratedAssets) poolByAssetId.putIfAbsent(a.id, "Rated")
+            for (a in randomAssets) poolByAssetId.putIfAbsent(a.id, "Random")
+            for (a in recentAssets) poolByAssetId.putIfAbsent(a.id, "Recent")
+
             // Combine and deduplicate all filtered assets
             val allAssets =
                 (filteredPrimaryAssets + favoriteAssets + ratedAssets + randomAssets + recentAssets)
@@ -213,6 +223,7 @@ class ImmichMediaProvider(
                 ratedCount = ratedAssets.size,
                 randomCount = randomAssets.size,
                 recentCount = recentAssets.size,
+                poolByAssetId = poolByAssetId,
             )
         }
 
@@ -263,6 +274,7 @@ class ImmichMediaProvider(
         val ratedCount: Int,
         val randomCount: Int,
         val recentCount: Int,
+        val poolByAssetId: Map<String, String> = emptyMap(),
     )
 
     suspend fun fetchAlbums(): Result<List<Album>> = repository.fetchAlbums()

@@ -25,6 +25,7 @@ data class AerialMediaMetadata(
     var scene: SceneType = SceneType.UNKNOWN,
     var exif: AerialExifMetadata = AerialExifMetadata(),
     var albumName: String = "",
+    var sourcePool: String = "",
     var title: String = "",
 )
 

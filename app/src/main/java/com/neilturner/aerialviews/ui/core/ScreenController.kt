@@ -98,6 +98,7 @@ class ScreenController(
     private var isPaused = false
     private var pauseStartTime: Long = 0
     private var sleepTimerJob: Job? = null
+    private var providerRefreshJob: Job? = null
     private val metadataJobs = mutableMapOf<OverlayType, Job>()
     private var currentMedia: AerialMedia? = null
 
@@ -270,6 +271,7 @@ class ScreenController(
                 Timber.i("Playlist size: ${playlist.size}")
                 loadItem(playlist.nextItem())
                 scheduleSleepTimer()
+                scheduleProviderRefresh()
             } else {
                 showLoadingError()
             }
@@ -295,6 +297,31 @@ class ScreenController(
         // 3. playback started callback, fade out loading text, fade out loading view
         // 4. when video is almost finished - or skip - fade in loading view
         // 5. goto 2
+    }
+
+    private fun scheduleProviderRefresh() {
+        providerRefreshJob?.cancel()
+        val hours = GeneralPrefs.providerRefreshIntervalHours.toLongOrNull() ?: 0L
+        if (hours <= 0L) {
+            Timber.i("Provider refresh disabled")
+            return
+        }
+        Timber.i("Scheduling provider refresh every $hours hour(s)")
+        providerRefreshJob =
+            mainScope.launch {
+                val intervalMillis = hours * 3_600_000L
+                while (true) {
+                    delay(intervalMillis)
+                    Timber.i("Provider refresh tick — re-fetching media")
+                    val refreshed = MediaService(context).fetchMedia { /* no loading UI mid-session */ }
+                    if (refreshed.mediaPlaylist.size > 0) {
+                        Timber.i("Playlist refreshed: ${refreshed.mediaPlaylist.size} items (was ${playlist.size}) — swapping on next transition")
+                        playlist = refreshed.mediaPlaylist
+                    } else {
+                        Timber.w("Provider refresh returned empty playlist, keeping existing one")
+                    }
+                }
+            }
     }
 
     private fun scheduleSleepTimer() {
@@ -653,6 +680,7 @@ class ScreenController(
         musicPlayer?.pause()
         musicPlayer?.release()
         sleepTimerJob?.cancel()
+        providerRefreshJob?.cancel()
         metadataJobs.values.forEach { it.cancel() }
         metadataJobs.clear()
         mainScope.cancel()

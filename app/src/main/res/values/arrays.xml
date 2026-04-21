@@ -1168,6 +1168,23 @@
         <item>1440</item>
     </string-array>
 
+    <string-array name="provider_refresh_interval_entries" translatable="false">
+        <item>Never</item>
+        <item>Every 1 hour</item>
+        <item>Every 3 hours</item>
+        <item>Every 6 hours</item>
+        <item>Every 12 hours</item>
+        <item>Every 24 hours</item>
+    </string-array>
+    <string-array name="provider_refresh_interval_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+        <item>3</item>
+        <item>6</item>
+        <item>12</item>
+        <item>24</item>
+    </string-array>
+
     <string-array name="immich_smart_slideshow_exempt_percent_entries" translatable="false">
         <item>100% (keep all)</item>
         <item>75%</item>
@@ -1491,16 +1508,20 @@
 
     <string name="overlay_meta_photo_location">Location (EXIF/Immich)</string>
     <string name="overlay_meta_photo_date">Date taken (EXIF/Immich)</string>
+    <string name="overlay_meta_photo_date_time">Date &amp; time taken (EXIF/Immich)</string>
     <string name="overlay_meta_photo_description">Description (EXIF/Immich)</string>
     <string name="overlay_meta_photo_album_name">Album Name (Immich)</string>
+    <string name="overlay_meta_photo_source_pool">Source — album or feed (Immich)</string>
     <string name="overlay_meta_photo_filename">Use filename as-is</string>
     <string name="overlay_meta_photo_folder_filename">Folder &amp; filename</string>
     <string name="overlay_meta_photo_folder_only">Folder name only</string>
     <string-array name="overlay_metadata_photos_entries" translatable="false">
         <item>@string/overlay_meta_photo_location</item>
         <item>@string/overlay_meta_photo_date</item>
+        <item>@string/overlay_meta_photo_date_time</item>
         <item>@string/overlay_meta_photo_description</item>
         <item>@string/overlay_meta_photo_album_name</item>
+        <item>@string/overlay_meta_photo_source_pool</item>
         <item>@string/overlay_meta_photo_filename</item>
         <item>@string/overlay_meta_photo_folder_filename</item>
         <item>@string/overlay_meta_photo_folder_only</item>
@@ -1508,8 +1529,10 @@
     <string-array name="overlay_metadata_photos_values" translatable="false">
         <item>LOCATION</item>
         <item>DATE_TAKEN</item>
+        <item>DATE_TIME_TAKEN</item>
         <item>DESCRIPTION</item>
         <item>ALBUM_NAME</item>
+        <item>SOURCE_POOL</item>
         <item>FILENAME</item>
         <item>FOLDER_FILENAME</item>
         <item>FOLDER_ONLY</item>
