@@ -232,6 +232,7 @@ class ImmichRepository(
                                 when {
                                     isSingleAlbumSelection -> albumNames.singleOrNull()
                                     albumNames.size == 1 -> albumNames.first()
+                                    albumNames.size > 1 -> albumNames.sorted().joinToString(" / ")
                                     else -> null
                                 }
                             asset.copy(albumName = resolvedAlbumName)

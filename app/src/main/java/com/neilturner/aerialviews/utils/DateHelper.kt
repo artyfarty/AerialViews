@@ -91,8 +91,9 @@ object DateHelper {
     }
 
     /**
-     * Format an EXIF date+time as a single human-readable block in the device locale.
-     * Example: "14 Aug 2016, 19:30" (en), "14 авг. 2016 г., 19:30" (ru).
+     * Format an EXIF date+time as a single human-readable block.
+     * Fixed day-first 24-hour pattern so output stays predictable regardless of device locale;
+     * month name comes from the active locale (e.g. "22 Nov 2025, 02:18" / "22 нояб. 2025, 02:18").
      */
     fun formatExifDateTime(
         date: String,
@@ -100,14 +101,11 @@ object DateHelper {
     ): String? {
         val parsedDate = parseExifDate(date, offset) ?: return null
         val parsedOffset = parseZoneOffset(offset?.trim())
-        val dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault())
-        val timeFormat = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault())
+        val formatter = SimpleDateFormat("d MMM yyyy, HH:mm", Locale.getDefault())
         if (parsedOffset != null) {
-            val tz = TimeZone.getTimeZone(parsedOffset)
-            dateFormat.timeZone = tz
-            timeFormat.timeZone = tz
+            formatter.timeZone = TimeZone.getTimeZone(parsedOffset)
         }
-        return "${dateFormat.format(parsedDate)}, ${timeFormat.format(parsedDate)}"
+        return formatter.format(parsedDate)
     }
 
     private fun parseExifDate(

@@ -206,7 +206,9 @@ class ImmichMediaProvider(
             // Attribute each unique asset to the first pool it was seen in.
             // Primary album entries come first so multi-pool assets keep their album name.
             val poolByAssetId = mutableMapOf<String, String>()
-            for (a in filteredPrimaryAssets) poolByAssetId.putIfAbsent(a.id, a.albumName?.ifBlank { null } ?: "Album")
+            for (a in filteredPrimaryAssets) {
+                a.albumName?.takeIf { it.isNotBlank() }?.let { poolByAssetId.putIfAbsent(a.id, it) }
+            }
             for (a in favoriteAssets) poolByAssetId.putIfAbsent(a.id, "Favorites")
             for (a in ratedAssets) poolByAssetId.putIfAbsent(a.id, "Rated")
             for (a in randomAssets) poolByAssetId.putIfAbsent(a.id, "Random")
