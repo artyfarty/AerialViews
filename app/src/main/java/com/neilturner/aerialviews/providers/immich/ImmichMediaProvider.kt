@@ -110,12 +110,35 @@ class ImmichMediaProvider(
                 ImmichClusterer.Result(assetResults.allAssets)
             }
 
+        // Optionally enrich ALL portrait assets (not just cluster representatives) with
+        // face bounding boxes so the renderer can bias center-crop / Ken Burns pan toward
+        // the subject — for whichever cluster member is randomly chosen at render time,
+        // not just the designated primary.
+        val faceRectByAssetId =
+            if (com.neilturner.aerialviews.models.prefs.GeneralPrefs.photoScaleFaceAware) {
+                val portraits =
+                    assetResults.allAssets.filter { a ->
+                        val w = a.width ?: 0
+                        val h = a.height ?: 0
+                        w > 0 && h > w
+                    }
+                try {
+                    repository.enrichPortraitsWithFaces(portraits)
+                } catch (e: Exception) {
+                    Timber.w(e, "Immich face enrichment failed; continuing without")
+                    emptyMap()
+                }
+            } else {
+                emptyMap()
+            }
+
         // Process assets and create media list
         val processResults =
             mapper.processAssets(
                 clusterResult.representatives,
                 clusterResult.alternatesByPrimaryId,
                 assetResults.poolByAssetId,
+                faceRectByAssetId,
             )
         media.addAll(processResults.media)
 
