@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application>
+        <!--
+            Block LeakCanary's auto-install ContentProviders so debug builds used as
+            daily-driver installs don't surface memory-leak popups. The dependency
+            stays available; opt back in with AppWatcher.manualInstall(application)
+            at runtime if you actually want to watch for leaks.
+        -->
+        <provider
+            android:name="leakcanary.internal.MainProcessAppWatcherInstaller"
+            android:authorities="${applicationId}.leakcanary-installer"
+            tools:node="remove" />
+        <provider
+            android:name="leakcanary.internal.PlumberInstaller"
+            android:authorities="${applicationId}.leakcanary-plumber-installer"
+            tools:node="remove" />
+    </application>
+
+</manifest>
