@@ -82,3 +82,9 @@ lint/tmp/
 
 # macOS
 *.DS_Store
+
+# Claude Code local settings, worktrees, and session scratch (may contain local paths)
+.claude/
+
+# Stray build outputs that land outside app/build/ (APKs are already ignored above)
+app/github/

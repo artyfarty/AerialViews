@@ -1,5 +1,27 @@
 # Aerial Views
 
+> ## 🍴 This is a fork
+>
+> A **personal fork** of [theothernt/AerialViews](https://github.com/theothernt/AerialViews),
+> focused on using AerialViews as an **[Immich](https://immich.app) photo-slideshow screensaver**.
+> Upstream keeps all of its original functionality; this fork just invests in the Immich provider,
+> which upstream treats as a minor feature.
+>
+> **What this fork adds/changes over upstream:**
+> - **Smart slideshow** — temporal clustering of burst photos + album-weighted sampling, so small
+>   albums aren't starved and near-duplicate bursts don't hog consecutive slots.
+> - **Portrait handling** — cinematic vertical Ken Burns pan for portraits, with optional
+>   face-aware biasing that keeps the subject in frame.
+> - **Immich overlay tags** — SOURCE_POOL (album/pool name), LOCATION, and DATE_TIME_TAKEN, each
+>   in its own overlay slot.
+> - **Immich v3 API support** — album assets via `search/metadata`, faces via `/api/faces`, and
+>   the `search/random` migration (upstream's Immich provider currently breaks on Immich v3).
+>
+> Design notes and API findings live in [`docs/`](docs/index.md). Licensing and attribution follow
+> upstream — this fork stays **GPL-3.0**. Everything below is upstream's original README.
+>
+> ---
+
 [![Latest GitHub release](https://img.shields.io/github/v/release/theothernt/AerialViews.svg?logo=github&label=GitHub&cacheSeconds=3600)](https://github.com/theothernt/AerialViews/releases/latest)
 [![Google Play Downloads](https://playbadges.pavi2410.com/badge/downloads?id=com.neilturner.aerialviews&pretty)](https://play.google.com/store/apps/details?id=com.neilturner.aerialviews)
 [![GitHub Downloads](https://img.shields.io/github/downloads/theothernt/AerialViews/total?color=blue&label=Downloads&logo=github)](https://github.com/theothernt/AerialViews/releases/latest)
