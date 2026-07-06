@@ -183,38 +183,38 @@ class ImmichRepository(
                 var combinedAlbumName = ""
                 val albumNamesByAssetId = mutableMapOf<String, MutableSet<String>>()
 
+                // Immich v3 dropped inline assets from GET /api/albums/{id} (its assets array is
+                // always empty now). Resolve all album names once in bulk via GET /api/albums,
+                // then fetch each album's assets via search/metadata (albumIds filter) concurrently.
+                // The per-album asset fetch is required, not an oversight: search/metadata does not
+                // report which album an asset came from, yet both the SOURCE_POOL overlay and the
+                // smart-slideshow album-weighted sampling need that per-asset membership. Batching
+                // every albumId into a single search would collapse that information. This path
+                // also works on Immich 2.x.
+                val albumNameById =
+                    fetchAlbums().getOrNull()?.associate { it.id to it.name } ?: emptyMap()
+
                 val albumDeferreds =
                     selectedAlbumIds.map { albumId ->
                         async {
-                            Pair(albumId, immichClient.getAlbum(apiKey = prefs.apiKey, albumId = albumId))
+                            Triple(albumId, albumNameById[albumId].orEmpty(), fetchAllAlbumAssets(albumId))
                         }
                     }
 
-                val albumResponses = albumDeferreds.awaitAll()
+                val albumResults = albumDeferreds.awaitAll()
 
-                for ((index, albumResponse) in albumResponses.withIndex()) {
-                    val albumId = albumResponse.first
-                    val response = albumResponse.second
-                    Timber.d("API Request for album $albumId - URL: ${response.raw().request.url}")
-
-                    if (response.isSuccessful) {
-                        val album = response.body()
-                        if (album != null) {
-                            Timber.d("Successfully fetched album: ${album.name}, assets: ${album.assets.size}")
-                            val albumAssets = album.assets.map { it.copy(albumName = album.name) }
-                            allAssets.addAll(albumAssets)
-                            albumAssets.forEach { asset ->
-                                albumNamesByAssetId.getOrPut(asset.id) { mutableSetOf() }.add(album.name)
-                            }
-                            combinedAlbumName += if (index == 0) album.name else ", ${album.name}"
-                        } else {
-                            Timber.e("Received null album from successful response for album ID: $albumId")
-                        }
-                    } else {
-                        val errorBody = response.errorBody()?.string()
-                        Timber.e("Failed to fetch album $albumId. Code: ${response.code()}, Error: $errorBody")
-                        // Continue with other albums instead of failing completely
+                for ((albumId, albumName, albumAssetList) in albumResults) {
+                    if (albumAssetList.isEmpty()) {
+                        Timber.w("Album $albumId ('$albumName') returned no assets")
+                        continue
                     }
+                    Timber.d("Fetched album: $albumName, assets: ${albumAssetList.size}")
+                    val albumAssets = albumAssetList.map { it.copy(albumName = albumName) }
+                    allAssets.addAll(albumAssets)
+                    albumAssets.forEach { asset ->
+                        albumNamesByAssetId.getOrPut(asset.id) { mutableSetOf() }.add(albumName)
+                    }
+                    combinedAlbumName += if (combinedAlbumName.isEmpty()) albumName else ", $albumName"
                 }
 
                 if (allAssets.isEmpty()) {
@@ -252,6 +252,44 @@ class ImmichRepository(
                 throw Exception("Failed to fetch selected albums", e)
             }
         }
+
+    /**
+     * Page through every asset of an album via POST /api/search/metadata (albumIds filter).
+     * Immich v3 no longer returns an album's assets inline from GET /api/albums/{id}; this is
+     * the replacement fetch path and is equally valid on Immich 2.x. Never throws — on a failed
+     * page it logs and returns whatever was collected so far.
+     */
+    private suspend fun fetchAllAlbumAssets(albumId: String): List<Asset> {
+        val collected = mutableListOf<Asset>()
+        var page = 1
+        while (true) {
+            val request =
+                SearchMetadataRequest(
+                    albumIds = listOf(albumId),
+                    size = 250, // Immich's default/maximum search page size
+                    page = page,
+                    withExif = true,
+                    type = getTypeFilter(),
+                )
+            val response =
+                try {
+                    immichClient.getFavoriteAssets(apiKey = prefs.apiKey, searchRequest = request)
+                } catch (e: Exception) {
+                    Timber.e(e, "Album $albumId assets page $page threw")
+                    break
+                }
+            if (!response.isSuccessful) {
+                Timber.e("Album $albumId assets page $page failed. Code: ${response.code()}")
+                break
+            }
+            val result = response.body()?.assets
+            val items = result?.items.orEmpty()
+            collected.addAll(items)
+            if (items.isEmpty() || result?.nextPage == null) break
+            page += 1
+        }
+        return collected
+    }
 
     private fun getTypeFilter(): String? =
         when (prefs.mediaType) {

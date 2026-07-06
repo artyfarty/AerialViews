@@ -69,6 +69,9 @@ data class SearchAssetsResponse(
 @Serializable
 data class AssetsResult(
     val items: List<Asset>,
+    // Pagination cursor from POST /api/search/metadata. A string page number while more
+    // results remain, null on the last page. Used to page through large album fetches.
+    val nextPage: String? = null,
 )
 
 @Serializable
@@ -79,6 +82,12 @@ data class SearchMetadataRequest(
     val size: Int? = null,
     val withExif: Boolean? = null,
     val type: String? = null,
+    // Filter results to specific album(s). Immich v3 no longer inlines an album's assets in
+    // GET /api/albums/{id} (assets there is always empty), so album playback fetches its
+    // assets via search/metadata with this filter instead. Also works on Immich 2.x.
+    val albumIds: List<String>? = null,
+    // 1-based page index; pairs with AssetsResult.nextPage to page through all matches.
+    val page: Int? = null,
 )
 
 @Serializable
