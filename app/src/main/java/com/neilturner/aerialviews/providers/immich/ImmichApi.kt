@@ -59,6 +59,15 @@ interface ImmichApi {
         @Header("x-api-key") apiKey: String,
         @Path("id") assetId: String,
     ): Response<Asset>
+
+    // Immich v3 moved face bounding boxes out of GET /api/assets/{id} (its `people` no longer
+    // embed a `faces` array) into this dedicated endpoint. Returns one entry per detected face
+    // on the asset, each carrying its bbox in the ML-preview frame (imageWidth/imageHeight).
+    @GET("/api/faces")
+    suspend fun getAssetFaces(
+        @Header("x-api-key") apiKey: String,
+        @Query("id") assetId: String,
+    ): Response<List<ImmichFace>>
 }
 
 @Serializable

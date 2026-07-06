@@ -440,10 +440,9 @@ class ImmichRepository(
                 assetsNeedingFaces.map { a ->
                     async {
                         try {
-                            val resp = immichClient.getAssetDetail(prefs.apiKey, a.id)
+                            val resp = immichClient.getAssetFaces(prefs.apiKey, a.id)
                             if (!resp.isSuccessful) return@async null
-                            val detail = resp.body() ?: return@async null
-                            val faces = detail.people.orEmpty().flatMap { it.faces }
+                            val faces = resp.body().orEmpty()
                             val largest =
                                 faces
                                     .filter { it.imageWidth > 0 && it.imageHeight > 0 }
