@@ -17,6 +17,11 @@
 > - **Immich v3 API support** — album assets via `search/metadata`, faces via `/api/faces`, and
 >   the `search/random` migration (upstream's Immich provider currently breaks on Immich v3).
 >
+> **Immich API key** — the provider is read-only; a least-privilege key needs just `asset.read`,
+> `asset.view`, `album.read`, `face.read` (plus `asset.download` only if you pick *Original*
+> image/video quality). Full mapping in
+> [`docs/immich-provider.md`](docs/immich-provider.md#api-key-permissions-least-privilege).
+>
 > Design notes and API findings live in [`docs/`](docs/index.md). Licensing and attribution follow
 > upstream — this fork stays **GPL-3.0**. Everything below is upstream's original README.
 >

@@ -14,6 +14,41 @@ Source lives in `app/src/main/java/com/neilturner/aerialviews/providers/immich/`
 - Retrofit + kotlinx-serialization; the JSON converter ignores unknown keys, so response DTOs
   declare only the fields the app needs (Immich returns many more).
 
+## API key permissions (least-privilege)
+
+When using API-key auth, the key does **not** need `all`. The provider only ever *reads*. Below is
+every endpoint it calls with `x-api-key` and the granular Immich permission each one requires
+(verified against Immich's controller `@Authenticated({ permission })` decorators):
+
+| Endpoint called | Immich permission |
+|---|---|
+| `GET /api/albums`, `GET /api/albums/{id}` | `album.read` |
+| `POST /api/search/metadata`, `POST /api/search/random` | `asset.read` |
+| `GET /api/assets/{id}` (asset detail, incl. embedded `people`) | `asset.read` |
+| `GET /api/faces?id=` | `face.read` |
+| `GET /api/assets/{id}/thumbnail` | `asset.view` |
+| `GET /api/assets/{id}/video/playback` | `asset.view` |
+| `GET /api/assets/{id}/original` | `asset.download` |
+
+**Minimal set** for the common config (image type *Preview*/*Fullsize*, video type *Transcoded*):
+
+```
+asset.read
+asset.view
+album.read
+face.read
+```
+
+Add **`asset.download`** only if you set image quality to **Original** or video to
+**Original** (non-transcoded) in settings — those are the only cases that hit
+`GET /api/assets/{id}/original`, which Immich guards with `asset.download` (not `asset.view`).
+Adding it up front (5 permissions) avoids a `403` when switching that setting later.
+
+Not required: `person.read` (faces come from `/api/faces` and the asset-detail `people` array, both
+covered above — the app never calls the People endpoints), any `*.write/update/delete/upload`
+permission, or `sharedLink.*` (shared-link mode authenticates with a `key`/`slug` query param, not
+the API key).
+
 ## Source pools
 
 The provider builds its playback pool from one or more independently-configured sources, then the
